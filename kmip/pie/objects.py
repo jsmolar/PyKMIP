@@ -15,7 +15,7 @@
 
 from abc import abstractmethod
 import sqlalchemy
-from sqlalchemy import Column, event, ForeignKey, Integer, String, VARBINARY
+from sqlalchemy import Column, event, ForeignKey, Integer, String, LargeBinary
 from sqlalchemy import Boolean
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -92,7 +92,7 @@ class ManagedObject(sql.Base):
     unique_identifier = Column('uid', Integer, primary_key=True)
     _object_type = Column('object_type', sql.EnumType(enums.ObjectType))
     _class_type = Column('class_type', String(50))
-    value = Column('value', VARBINARY(1024))
+    value = Column('value', LargeBinary)
     name_index = Column(Integer, default=0)
     _names = sqlalchemy.orm.relationship(
         "ManagedObjectName",
@@ -439,12 +439,12 @@ class Key(CryptographicObject):
     )
     _kdw_mac_signature = Column(
         '_kdw_mac_signature',
-        VARBINARY(1024),
+        LargeBinary,
         default=None
     )
     _kdw_iv_counter_nonce = Column(
         '_kdw_iv_counter_nonce',
-        VARBINARY(1024),
+        LargeBinary,
         default=None
     )
     _kdw_encoding_option = Column(

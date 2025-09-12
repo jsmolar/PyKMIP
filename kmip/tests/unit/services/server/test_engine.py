@@ -144,7 +144,6 @@ class TestKmipEngine(testtools.TestCase):
         args = ("sqlite:////tmp/pykmip.database",)
         fargs = {
             'echo': False,
-            'connect_args': {'check_same_thread': False}
         }
         create_engine_mock.assert_called_once_with(*args, **fargs)
 

@@ -88,14 +88,13 @@ class KmipEngine(object):
 
         self._cryptography_engine = engine.CryptographyEngine()
 
-        self.database_path = 'sqlite:///{}'.format(database_path)
+        self.database_path = database_path
         if not database_path:
             self.database_path = 'sqlite:////tmp/pykmip.database'
 
         self._data_store = sqlalchemy.create_engine(
             self.database_path,
             echo=False,
-            connect_args={'check_same_thread': False}
         )
         sqltypes.Base.metadata.create_all(self._data_store)
         self._data_store_session_factory = sqlalchemy.orm.sessionmaker(

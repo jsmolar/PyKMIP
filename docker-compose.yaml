@@ -1,0 +1,60 @@
+services:
+  haproxy:
+    image: haproxy:2.9
+    container_name: haproxy
+    ports:
+      - "5696:5696"
+    configs:
+      - source: haproxy_config
+        target: /usr/local/etc/haproxy/haproxy.cfg
+    depends_on:
+      - pykmip
+
+  pykmip:
+    image: jsmolar/pykmip-server:latest
+    volumes:
+      - /etc/encrypt_conf:/etc/encrypt_conf:ro
+      - ./data/logs:/var/pykmip/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15
+    container_name: pykmip-postgres
+    environment:
+      POSTGRES_DB: pykmip
+      POSTGRES_USER: pykmip_user
+      POSTGRES_PASSWORD: pykmip_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pykmip_user -d pykmip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+configs:
+  haproxy_config:
+    content: |
+      global
+          log stdout format raw local0
+      
+      defaults
+          log     global
+          mode    tcp
+          option  tcplog
+          timeout connect 5s
+          timeout client  50s
+          timeout server  50s
+      
+      frontend kmip_frontend
+          bind *:5696
+          default_backend kmip_backend
+      
+      backend kmip_backend
+          balance roundrobin
+          # automatically registers servers pykmip_1 ... pykmip_10
+          server-template pykmip 1-20 pykmip:5696 check
