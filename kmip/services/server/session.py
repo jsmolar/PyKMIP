@@ -109,6 +109,7 @@ class KmipSession(threading.Thread):
                 try:
                     self._handle_message_loop()
                 except exceptions.ConnectionClosed:
+                    self._logger.info("Connection is closed")
                     break
                 except Exception as e:
                     self._logger.info("Failure handling message loop")
@@ -124,7 +125,11 @@ class KmipSession(threading.Thread):
         self._logger.info("Stopping session: {0}".format(self.name))
 
     def _handle_message_loop(self):
-        request_data = self._receive_request()
+        try:
+            request_data = self._receive_request()
+        except socket.timeout:
+            self._logger.info("Session closed due to timeout")
+            return
         request = messages.RequestMessage()
 
         max_size = self._max_response_size
